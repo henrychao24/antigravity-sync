@@ -101,32 +101,34 @@ export class Relauncher {
    */
   private async showMacOSDialog(ideName: string): Promise<void> {
     const command = `~/.local/bin/${ideName.toLowerCase()}-cdp`;
+    
+    // Dynamically generate the native patch command
+    const macosDir = path.dirname(process.execPath);
+    const binaryName = path.basename(process.execPath).replace('.real', '');
+    const patchCommand = `cd "${macosDir}" && if file "${binaryName}" | grep -q "Mach-O"; then mv "${binaryName}" "${binaryName}.real" && printf '#!/bin/bash\\nDIR="$(dirname "$0")"\\nexec "$DIR/${binaryName}.real" --remote-debugging-port=${this.cdpPort} "$@"\\n' > "${binaryName}" && chmod +x "${binaryName}" && echo "✅ Patch successful"; else echo "⚠️ Already patched"; fi`;
 
     const choice = await vscode.window.showWarningMessage(
       `✅ CDP Setup Complete!\n\n` +
       `📌 NEXT STEPS:\n` +
       `1. Press Cmd+Q to QUIT ${ideName}\n` +
       `2. Open Terminal app (in /Applications/Utilities/)\n` +
-      `3. Paste the command and press Enter\n\n` +
-      `Or use the wrapper app in ~/Applications folder.`,
+      `3. Paste the command and press Enter`,
       { modal: true },
-      '📋 Copy Command',
-      '📁 Open Folder'
+      '📋 Copy Wrapper Command',
+      '🔧 Copy Native Patch Command'
     );
 
-    if (choice === '📋 Copy Command') {
+    if (choice === '📋 Copy Wrapper Command') {
       await vscode.env.clipboard.writeText(command);
       vscode.window.showInformationMessage(
-        `✅ Command copied!\n\n` +
+        `✅ Wrapper Command copied!\n\n` +
         `Now: Cmd+Q → Open Terminal → Paste (Cmd+V) → Enter`
       );
-    } else if (choice === '📁 Open Folder') {
-      const { exec } = require('child_process');
-      const folderPath = path.join(os.homedir(), 'Applications');
-      exec(`open "${folderPath}"`);
+    } else if (choice === '🔧 Copy Native Patch Command') {
+      await vscode.env.clipboard.writeText(patchCommand);
       vscode.window.showInformationMessage(
-        `✅ Folder opened!\n\n` +
-        `Now: Cmd+Q → Double-click "${ideName}CDP" in the folder`
+        `✅ Patch Command copied!\n\n` +
+        `Now: Cmd+Q → Open Terminal → Paste (Cmd+V) → Enter → Restart ${ideName} normally`
       );
     }
   }
