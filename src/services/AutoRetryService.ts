@@ -112,7 +112,7 @@ export class AutoRetryService {
     this.log(`✅ Auto Retry started!`, 'success');
     this.log(`Connected to ${this.cdpHandler.getConnectionCount()} page(s)`, 'info');
 
-    // Start polling to maintain connection
+    // Periodic check: re-inject on page reload or new windows (60s is enough)
     this.pollTimer = setInterval(async () => {
       if (!this.isRunning) return;
 
@@ -120,7 +120,7 @@ export class AutoRetryService {
         pollInterval: this.config.intervalSeconds * 1000,
         bannedCommands: this.getDefaultBannedCommands()
       });
-    }, 5000);
+    }, 60000);
 
     return true;
   }
