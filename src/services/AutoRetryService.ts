@@ -143,8 +143,8 @@ export class AutoRetryService {
   /**
    * Setup CDP by modifying shortcuts
    */
-  public async setupCDP(): Promise<boolean> {
-    const result = await this.relauncher.ensureCDPAndPrompt();
+  public async setupCDP(silent = false): Promise<boolean> {
+    const result = await this.relauncher.ensureCDPAndPrompt(silent);
     return result.success;
   }
 

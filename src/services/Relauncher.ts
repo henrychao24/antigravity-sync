@@ -53,8 +53,9 @@ export class Relauncher {
 
   /**
    * Main entry point: setup CDP and show instructions
+   * @param silent If true, skip all dialogs (for auto-start)
    */
-  async ensureCDPAndPrompt(): Promise<{ success: boolean; relaunched: boolean }> {
+  async ensureCDPAndPrompt(silent = false): Promise<{ success: boolean; relaunched: boolean }> {
     if (this.checkCurrentProcessHasFlag()) {
       this.log('CDP flag already present.', 'success');
       return { success: true, relaunched: false };
@@ -64,11 +65,19 @@ export class Relauncher {
     const status = await this.modifyShortcut();
 
     if (status === 'MODIFIED' || status === 'READY') {
-      await this.showSetupDialog();
+      if (!silent) {
+        await this.showSetupDialog();
+      } else {
+        this.log('CDP setup complete. Restart IDE to enable Auto Retry.', 'info');
+      }
       return { success: true, relaunched: false };
     }
 
-    this.showManualInstructions();
+    if (!silent) {
+      this.showManualInstructions();
+    } else {
+      this.log('CDP setup failed. Use --remote-debugging-port to launch IDE.', 'error');
+    }
     return { success: false, relaunched: false };
   }
 
