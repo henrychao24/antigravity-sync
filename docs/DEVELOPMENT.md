@@ -5,7 +5,7 @@ This guide covers local development setup for Antigravity Sync.
 ## Prerequisites
 
 - Node.js 18+
-- Yarn 1.x
+- npm
 - VS Code
 - Git
 
@@ -13,15 +13,15 @@ This guide covers local development setup for Antigravity Sync.
 
 ```bash
 # Clone and install
-git clone https://github.com/AntisyncOrg/antigravity-sync.git
+git clone https://github.com/henrychao24/antigravity-sync.git
 cd antigravity-sync
-yarn install
+npm install
 
 # Build
-yarn build
+npm run build
 
 # Run tests
-yarn test
+npm test
 ```
 
 ## Project Structure
