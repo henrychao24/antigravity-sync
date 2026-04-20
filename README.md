@@ -2,6 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**English** | [中文](README_zh.md)
+
 **Auto-click Retry buttons for AI coding agents. Zero-babysitting automation.**
 
 ---
@@ -16,7 +18,7 @@
 
 ## 🤖 Auto Retry
 
-Automatically click **Retry** buttons when AI agents encounter errors. Zero-babysitting automation!
+Automatically click **Retry** buttons when AI agents encounter errors, and optionally auto-click **Run** buttons for terminal commands. Zero-babysitting automation!
 
 ### How It Works
 
@@ -45,6 +47,14 @@ Uses Chrome DevTools Protocol (CDP) to inject a script that monitors the IDE web
 | Windows | ✅ Full support |
 | Linux | ✅ Full support |
 
+#### 💡 Windows Background Startup Tip
+
+For Windows users who want to launch the IDE (e.g., Antigravity IDE) with the CDP port enabled, without a lingering command prompt window, you can use the provided `Antigravity.vbs` script:
+
+1. Ensure the executable path inside `Antigravity.vbs` matches your installation (default is `C:\Soft\tools\Antigravity\Antigravity.exe`).
+2. Double-click the `Antigravity.vbs` script (or create a desktop shortcut to it). 
+3. This will silently launch the IDE with `--remote-debugging-port=31905` in the background!
+
 ---
 
 ## Commands
@@ -61,6 +71,7 @@ Uses Chrome DevTools Protocol (CDP) to inject a script that monitors the IDE web
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `antigravitySync.autoStartRetry` | `false` | Automatically start Auto Retry when IDE launches |
+| `antigravitySync.autoRunEnabled` | `false` | Auto-click "Run" button for AI agent terminal commands |
 | `antigravitySync.cdpPort` | `31905` | CDP remote debugging port for auto-accept |
 | `antigravitySync.autoRetryInterval` | `3` | Interval in seconds between retry checks |
 | `antigravitySync.autoRetryMaxRetries` | `50` | Maximum number of auto-retries before stopping |

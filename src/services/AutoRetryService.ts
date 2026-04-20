@@ -12,6 +12,7 @@ export type AutoRetryLogCallback = (message: string, type: 'info' | 'success' | 
 
 export interface AutoRetryConfig {
   enabled: boolean;
+  autoRunEnabled: boolean;
   intervalSeconds: number;
   maxRetries: number;
   cooldownSeconds: number;
@@ -38,6 +39,7 @@ export class AutoRetryService {
     const config = vscode.workspace.getConfiguration('antigravitySync');
     return {
       enabled: config.get<boolean>('autoRetryEnabled', false),
+      autoRunEnabled: config.get<boolean>('autoRunEnabled', false),
       intervalSeconds: config.get<number>('autoRetryInterval', 3),
       maxRetries: config.get<number>('autoRetryMaxRetries', 50),
       cooldownSeconds: config.get<number>('autoRetryCooldown', 5)
@@ -100,7 +102,8 @@ export class AutoRetryService {
     this.config = this.getConfig();
     const connected = await this.cdpHandler.start({
       pollInterval: this.config.intervalSeconds * 1000,
-      bannedCommands: this.getDefaultBannedCommands()
+      bannedCommands: this.getDefaultBannedCommands(),
+      autoRunEnabled: this.config.autoRunEnabled
     });
 
     if (!connected) {
@@ -118,7 +121,8 @@ export class AutoRetryService {
 
       await this.cdpHandler.start({
         pollInterval: this.config.intervalSeconds * 1000,
-        bannedCommands: this.getDefaultBannedCommands()
+        bannedCommands: this.getDefaultBannedCommands(),
+        autoRunEnabled: this.config.autoRunEnabled
       });
     }, 60000);
 

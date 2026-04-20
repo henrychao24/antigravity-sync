@@ -2,7 +2,7 @@
   "name": "antigravity-auto-retry",
   "displayName": "Antigravity Auto Retry",
   "description": "Auto-click Retry buttons for AI coding agents. Zero-babysitting automation via CDP.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "henrychao24",
   "author": "Henry Chao",
   "icon": "resources/icons/icon.png",
@@ -64,6 +64,11 @@
           "type": "boolean",
           "default": false,
           "description": "Enable auto-accept for AI agent buttons (requires CDP setup)"
+        },
+        "antigravitySync.autoRunEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-click Run button for AI agent terminal commands (requires CDP setup)"
         },
         "antigravitySync.autoStartRetry": {
           "type": "boolean",

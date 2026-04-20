@@ -18,6 +18,7 @@ const PORT_RANGE = 3; // 31902-31908
 export interface CDPConfig {
   pollInterval?: number;
   bannedCommands?: string[];
+  autoRunEnabled?: boolean;
 }
 
 export interface CDPStats {
@@ -389,6 +390,7 @@ export class CDPHandler {
   // Config
   let config = {
     pollInterval: 1000,
+    autoRunEnabled: false,
     bannedCommands: [
       'rm -rf /',
       'rm -rf ~',
@@ -437,6 +439,72 @@ export class CDPHandler {
     );
   }
 
+  // Check if a button is inside a "Run command?" dialog
+  function isRunCommandContext(element) {
+    let el = element;
+    // Walk up to find the dialog container (up to 10 levels)
+    for (let i = 0; i < 10 && el; i++) {
+      // Look for the "Run command?" header text
+      const spans = el.querySelectorAll ? el.querySelectorAll('span') : [];
+      for (const span of spans) {
+        const text = (span.textContent || '').trim();
+        if (text === 'Run command?' || text === 'Run command') {
+          return true;
+        }
+      }
+      // Also check direct text content of divs with border styling
+      if (el.classList && (el.classList.contains('rounded-lg') || el.classList.contains('border'))) {
+        const headerText = el.textContent || '';
+        if (headerText.includes('Run command?') || headerText.includes('Run command')) {
+          return true;
+        }
+      }
+      el = el.parentElement;
+    }
+    return false;
+  }
+
+  // Find and click Run buttons in a document
+  function clickRunButtonsInDocument(doc) {
+    if (!config.autoRunEnabled) return;
+
+    const buttons = doc.querySelectorAll('button, [role="button"]');
+
+    for (const btn of buttons) {
+      // Get the first span's text (the button label, not the keyboard shortcut)
+      const spans = btn.querySelectorAll('span.truncate');
+      let btnText = '';
+      if (spans.length > 0) {
+        btnText = (spans[0].textContent || '').trim();
+      } else {
+        btnText = (btn.textContent || '').trim();
+      }
+
+      // Only target "Run" button (not "Run command" or other variations)
+      if (btnText !== 'Run') continue;
+
+      // Must be in a "Run command?" dialog context
+      if (!isRunCommandContext(btn)) continue;
+
+      // Check for dangerous commands in the dialog
+      const dialog = btn.closest('.rounded-lg, [class*="border"]');
+      if (dialog) {
+        const preBlock = dialog.querySelector('pre');
+        const commandText = preBlock ? preBlock.textContent || '' : dialog.textContent || '';
+        if (isDangerousCommand(commandText)) {
+          console.log('[Auto Retry] ⚠️ Blocked dangerous Run command!');
+          stats.blocked++;
+          continue;
+        }
+      }
+
+      // Click the Run button
+      btn.click();
+      stats.clicks++;
+      console.log('[Auto Retry] ✅ Clicked Run! (Total: ' + stats.clicks + ')');
+    }
+  }
+
   // Find and click Retry buttons
   function findAndClickButtons() {
     if (isProcessing) return;
@@ -445,6 +513,7 @@ export class CDPHandler {
     try {
       // Search in main document
       clickButtonsInDocument(document);
+      clickRunButtonsInDocument(document);
 
       // Search in iframes
       const iframes = document.querySelectorAll('iframe');
@@ -453,6 +522,7 @@ export class CDPHandler {
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
           if (iframeDoc) {
             clickButtonsInDocument(iframeDoc);
+            clickRunButtonsInDocument(iframeDoc);
           }
         } catch (e) {
           // Cross-origin iframe, skip
